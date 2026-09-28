@@ -97,3 +97,5 @@ readouts, START ALL / STOP ALL / RESTART ALL) and the Kotlin foreground service
 plus process manager that starts a real bundled runtime and serves a project at
 `http://localhost:8080`. Multiple PHP versions, the extension manager, SSL,
 backups, LAN access and the WordPress/Laravel installers come after that.
+
+<!-- CI trigger probe -->
