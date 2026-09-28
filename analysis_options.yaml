@@ -1,0 +1,5 @@
+# DevNest lint configuration.
+#
+# The baseline is the official Flutter lints; the skeleton deliberately adds no
+# extra rules so a green `flutter analyze` in CI means exactly what it says.
+include: package:flutter_lints/flutter.yaml

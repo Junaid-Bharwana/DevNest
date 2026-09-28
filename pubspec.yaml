@@ -1,0 +1,25 @@
+name: devnest
+description: "DevNest — turn your Android device into a local web development server."
+# Prevents accidental publication to pub.dev.
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  # Dart 3.9+ so the toolchain can move without touching the code; the CI build
+  # pins the exact Flutter/Dart used (see .github/workflows/android.yml).
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # No third-party packages yet on purpose: the skeleton must stay small and
+  # every dependency added here is resolved on every CI run.
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  # Material Design is the only asset the shell needs today.
+  uses-material-design: true

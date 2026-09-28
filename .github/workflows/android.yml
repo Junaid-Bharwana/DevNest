@@ -1,0 +1,99 @@
+# DevNest — Android CI
+#
+# The machine this repository is developed on has no Flutter, Dart, Java or
+# Android SDK installed, so this workflow is where the app is actually compiled.
+# It runs on every push and pull request, and uploads an installable debug APK
+# that can be sideloaded onto a real device.
+#
+# Toolchain is pinned on purpose (Flutter 3.47.5 / Dart 3.13, JDK 17, Gradle
+# 9.3.1, AGP 9.1.0, Kotlin 2.4.0 — the Gradle/AGP/Kotlin versions live in
+# android/settings.gradle.kts and android/gradle/wrapper/gradle-wrapper.properties).
+name: Android CI
+
+on:
+  push:
+  pull_request:
+
+# One build per branch/PR; a newer push cancels the older run.
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  debug-apk:
+    name: Analyze, test and build the debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter (pinned stable)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - name: Report the toolchain versions
+        run: flutter --version
+
+      # WHY THIS STEP EXISTS
+      # `android/` is hand-written in this repository (manifest, Gradle files,
+      # application id) because the development machine cannot run
+      # `flutter create` and cannot produce binary Android files such as
+      # gradle-wrapper.jar or the launcher icons. This step fills in only what is
+      # missing: `flutter create` never overwrites an existing file, so it
+      # materialises the generated platform files (Gradle wrapper, mipmaps,
+      # launch-theme resources) while leaving our committed configuration alone.
+      # The "Verify" step below fails the run if that assumption ever stops
+      # holding, so the configuration can never be silently replaced.
+      - name: Materialise the generated Android platform files
+        run: flutter create --platforms=android --org com.devnest --project-name devnest .
+
+      # `flutter create` derives its Android package from --org plus
+      # --project-name, which yields the unused package com.devnest.devnest. Our
+      # confirmed application id is com.devnest.app and its MainActivity is
+      # committed, so drop the generated duplicate.
+      - name: Drop the unused generated package
+        run: rm -rf android/app/src/main/kotlin/com/devnest/devnest
+
+      - name: Verify the committed Android configuration survived
+        run: |
+          grep -q 'applicationId = "com.devnest.app"' android/app/build.gradle.kts
+          grep -q 'minSdk = 29' android/app/build.gradle.kts
+          grep -q 'targetSdk = 36' android/app/build.gradle.kts
+          grep -q 'abiFilters.add("arm64-v8a")' android/app/build.gradle.kts
+          grep -q 'android:label="DevNest"' android/app/src/main/AndroidManifest.xml
+          grep -q 'android:extractNativeLibs="true"' android/app/src/main/AndroidManifest.xml
+          grep -q '9.1.0' android/settings.gradle.kts
+          grep -q 'gradle-9.3.1-all.zip' android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Install Dart dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      # arm64-v8a only, matching the abiFilters in android/app/build.gradle.kts:
+      # the bundled runtimes are ARM64 binaries and nothing else is supported.
+      - name: Build the debug APK
+        run: flutter build apk --debug --target-platform android-arm64
+
+      - name: Upload the debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: devnest-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

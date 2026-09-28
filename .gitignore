@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# Dart / Flutter
+# ---------------------------------------------------------------------------
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+**/doc/api/
+build/
+.pub-cache/
+.pub/
+
+# IDE
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# ---------------------------------------------------------------------------
+# Android
+# ---------------------------------------------------------------------------
+# Binary and machine-local files. `gradle-wrapper.jar` and `gradlew` are
+# (re)created by `flutter create` / the first Gradle run, so they are not
+# committed; `android/gradle/wrapper/gradle-wrapper.properties` deliberately IS
+# committed because it pins the Gradle version used by CI.
+android/.gradle/
+android/.cxx/
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+android/local.properties
+android/GeneratedPluginRegistrant.java
+android/key.properties
+**/*.keystore
+**/*.jks
+
+# ---------------------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------------------
+*.log
+.DS_Store
+.history
+.buildlog/
