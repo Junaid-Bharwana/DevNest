@@ -13,6 +13,10 @@ name: Android CI
 on:
   push:
   pull_request:
+  # Manual runs. Also the reliable trigger for automated pushes: a push made
+  # with an app/token identity does not start a workflow run by itself, so CI is
+  # dispatched explicitly (see the run URLs in the pull request / report).
+  workflow_dispatch:
 
 # One build per branch/PR; a newer push cancels the older run.
 concurrency:
